@@ -38,5 +38,5 @@ def read_from_vastdb(config: Dict[str, Any], table_name: str = None) -> daft.Dat
         table = schema.table(table_name)
 
         paTable: pa.Table = table.select().read_all()
-        return daft.from_arrow(table)
+        return daft.from_arrow(paTable)
 
