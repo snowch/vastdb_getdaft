@@ -3,7 +3,7 @@ import daft
 import pyarrow as pa
 from typing import Iterator, Dict, Any
 
-def read_from_vastdb(config: Dict[str, Any]) -> daft.DataFrame:
+def read_from_vastdb(config: Dict[str, Any], table_name: str) -> daft.DataFrame:
     """
     Read data from VAST DB into a Daft DataFrame.
     
@@ -14,12 +14,12 @@ def read_from_vastdb(config: Dict[str, Any]) -> daft.DataFrame:
             - secret: AWS secret access key
             - bucket: Bucket name
             - schema: Schema name
-            - table: Table name
+        table_name: Table name
             
     Returns:
         daft.DataFrame
     """
-    def record_batch_generator() -> Iterator[pa.RecordBatch]:
+    def vast_table_reader() -> pa.Table:
         session = vastdb.connect(
             endpoint=config['endpoint'],
             access=config['access'],
@@ -29,22 +29,8 @@ def read_from_vastdb(config: Dict[str, Any]) -> daft.DataFrame:
         with session.transaction() as tx:
             bucket = tx.bucket(config['bucket'])
             schema = bucket.schema(config['schema'])
-            table = schema.table(config['table'])
-            
-            # Stream data using VAST DB's select method
-            reader = table.select()
-            return reader.read_all()
-            
-            # # Yield record batches
-            # while True:
-            #     try:
-            #         batch = reader.read_next_batch()
-            #         if batch is None:
-            #             break
-            #         yield batch
-            #     except Exception as e:
-            #         print(f"Error reading batch: {e}")
-            #         break
-    
-    # Create Daft DataFrame from the record batch generator
-    return daft.from_arrow(record_batch_generator())
+            table = schema.table(table_name)
+        
+            return table.select().read_all()
+
+    return daft.from_arrow(vast_table_reader())
