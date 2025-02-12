@@ -161,6 +161,8 @@ class VastDBConnector(Connector):
                     if batch is None:
                         break
                     yield batch
+                except StopIteration:
+                    break
 
     def get_schema(self) -> Dict[str, Any]:
         """
