@@ -10,7 +10,7 @@
 
 ```python
 import daft
-from your_module import VastDBConnector
+from vastdb_getdaft import VastDBConnector
 
 # Configure your connector
 config = {
